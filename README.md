@@ -2,6 +2,15 @@
 
 This project demonstrates Docker containerization concepts and provides a complete MLOps platform setup using MLflow and Trino with Docker Compose.
 
+## Overview
+
+The project showcases:
+- **Docker fundamentals**: Multi-stage builds, CMD vs ENTRYPOINT, user management
+- **MLflow platform**: Complete tracking server with PostgreSQL backend
+- **Trino platform**: Distributed SQL query engine setup
+- **Best practices**: Health checks, service dependencies, persistent storage
+- **Production-ready**: Environment configuration, monitoring, troubleshooting
+
 ## Project Structure
 
 ```
@@ -19,11 +28,36 @@ docker/
 ├── docs/                           # Additional documentation
 │   └── DOCKER_CONCEPTS.md          # Docker concepts explained
 ├── .env                            # Environment variables
+├── .gitignore                      # Git ignore file
 ├── requirements.txt                # Python dependencies
 ├── mlflow-docker-compose.yaml      # MLflow with PostgreSQL setup
 ├── trino-docker-compose.yaml       # Trino with PostgreSQL setup
+├── QUICKSTART.md                   # Quick start guide
 └── README.md                       # This file
 ```
+
+## Quick Start
+
+1. **Clone and navigate to project**:
+   ```bash
+   cd docker/
+   ```
+
+2. **Start MLflow platform**:
+   ```bash
+   docker compose -f mlflow-docker-compose.yaml up -d
+   ```
+
+3. **Test the setup**:
+   ```bash
+   pip install -r requirements.txt
+   cd examples/
+   python smoke_test.py
+   ```
+
+4. **Access MLflow UI**: http://localhost:5001
+
+For detailed instructions, see [QUICKSTART.md](QUICKSTART.md)
 
 ## Environment Configuration
 
@@ -222,3 +256,17 @@ docker compose -f mlflow-docker-compose.yaml exec mlflow bash
 # View detailed logs
 docker compose -f mlflow-docker-compose.yaml logs --tail=100 -f mlflow
 ```
+
+## Additional Resources
+
+- [QUICKSTART.md](QUICKSTART.md) - Quick setup guide
+- [docs/DOCKER_CONCEPTS.md](docs/DOCKER_CONCEPTS.md) - Detailed Docker concepts
+- [examples/README.md](examples/README.md) - Example usage documentation
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test with the provided examples
+5. Submit a pull request
