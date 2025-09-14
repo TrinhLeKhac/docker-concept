@@ -1,49 +1,54 @@
-# Docker compose spec https://github.com/compose-spec/compose-spec/blob/master/spec.md#depends_on
-version: '3.8'
+# Docker Compose configuration for MLflow tracking server with PostgreSQL backend
+# Reference: https://github.com/compose-spec/compose-spec/blob/master/spec.md#depends_on
+version: '3.8'  # Docker Compose file format version
 
 services:
+  # PostgreSQL database service - serves as MLflow's backend store
   postgresql: 
-    image: postgres:13
-    container_name: mlflow_db
+    image: postgres:13                    # Official PostgreSQL 13 image from Docker Hub
+    container_name: mlflow_db             # Custom container name for easy identification
     ports:
-      - "5432:5432" # host:container
-    env_file: .env
+      - "5432:5432"                       # Port mapping: host:container (expose PostgreSQL port)
+    env_file: .env                        # Load environment variables from .env file
     networks:
-      - mlops-platform
+      - mlops-platform                    # Connect to custom network for service communication
     volumes:
-      - mlflow_db_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - mlflow_db_data:/var/lib/postgresql/data  # Persistent storage for database data
+    healthcheck:                          # Health check configuration
+      test: ["CMD-SHELL", "pg_isready"]   # Command to check if PostgreSQL is ready
+      interval: 10s                       # Check every 10 seconds
+      timeout: 5s                         # Wait 5 seconds for response
+      retries: 5                          # Retry 5 times before marking as unhealthy
 
+  # MLflow tracking server service
   mlflow:
-    build:
-      context: mlflow/
+    build:                                # Build configuration
+      context: mlflow/                    # Build context directory containing Dockerfile
       args:
-        MLFLOW_VERSION: ${MLFLOW_VERSION}
-    container_name: mlflow
+        MLFLOW_VERSION: ${MLFLOW_VERSION} # Pass MLflow version as build argument
+    container_name: mlflow                # Custom container name
     ports:
-      - "5001:5000"
-    env_file: .env
+      - "5001:5000"                       # Port mapping: expose MLflow UI on host port 5001
+    env_file: .env                        # Load environment variables (DB connection, etc.)
     networks:
-      - mlops-platform
+      - mlops-platform                    # Same network as PostgreSQL for communication
     volumes:
-      - mlflow_data:/mlflow
-    depends_on:
+      - mlflow_data:/mlflow               # Persistent storage for MLflow artifacts
+    depends_on:                           # Service dependency configuration
       postgresql:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
-      interval: 10s
-      timeout: 10s
-      retries: 5
-      start_period: 10s
+        condition: service_healthy        # Wait for PostgreSQL to be healthy before starting
+    healthcheck:                          # Health check for MLflow service
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]  # Check MLflow health endpoint
+      interval: 10s                       # Check every 10 seconds
+      timeout: 10s                        # Wait 10 seconds for response
+      retries: 5                          # Retry 5 times before marking unhealthy
+      start_period: 10s                   # Wait 10 seconds before starting health checks
 
+# Named volumes for persistent data storage
 volumes:
-  mlflow_db_data:
-  mlflow_data:
+  mlflow_db_data:                         # Volume for PostgreSQL data persistence
+  mlflow_data:                            # Volume for MLflow artifacts persistence
 
+# Custom networks for service isolation and communication
 networks:
-  mlops-platform:
+  mlops-platform:                         # Custom bridge network for MLflow services

@@ -1,25 +1,32 @@
-version: '3.8'
+# Docker Compose configuration for Trino distributed SQL query engine
+version: '3.8'  # Docker Compose file format version
 
 services:
+  # Trino coordinator service - distributed SQL query engine
   trino:
-    image: trinodb/trino:410
+    image: trinodb/trino:410              # Official Trino image version 410
     ports:
-      - '8090:8080'
+      - '8090:8080'                       # Port mapping: expose Trino UI on host port 8090
     networks:
-      - dp
+      - dp                                # Connect to data platform network
+    # Note: Trino uses default configuration, can be customized with volumes and config files
 
+  # PostgreSQL database service - serves as Trino's metadata catalog
   postgresql: 
-    image: postgres:13
+    image: postgres:13                    # Official PostgreSQL 13 image
     ports:
-      - '5433:5432'
-    env_file: .env
+      - '5433:5432'                       # Port mapping: use different host port (5433) to avoid conflicts
+    env_file: .env                        # Load database credentials from .env file
     networks:
-      - dp
+      - dp                                # Same network as Trino for communication
     volumes:
-      - postgresql_data:/var/lib/postgresql/data
+      - postgresql_data:/var/lib/postgresql/data  # Persistent storage for metadata
+    # Note: No health check configured - Trino will handle connection retries
 
+# Named volumes for persistent data storage
 volumes:
-  postgresql_data:
+  postgresql_data:                        # Volume for PostgreSQL metadata persistence
 
+# Custom networks for service isolation
 networks:
-  dp:
+  dp:                                     # Data platform network for Trino services
